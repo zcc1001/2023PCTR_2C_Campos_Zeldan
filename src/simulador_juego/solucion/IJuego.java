@@ -5,4 +5,5 @@ public interface IJuego {
 
     void eliminarEnemigo(int tipoEnemigo);
 
+    int numeroMaximoEnemigos();
 }

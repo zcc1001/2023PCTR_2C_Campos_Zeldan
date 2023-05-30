@@ -96,6 +96,11 @@ public class Juego implements IJuego {
         notifyAll(); // Se notifica el cambio de estado
     }
 
+    @Override
+    public int numeroMaximoEnemigos() {
+        return MAX_ENEMIGOS;
+    }
+
     private void imprimirInfo(String mensaje) {
         System.out.println(mensaje);
         System.out.println("--> Enemigos totales: " + contadorEnemigosTotales);

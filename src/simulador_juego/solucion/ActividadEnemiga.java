@@ -16,7 +16,7 @@ public class ActividadEnemiga implements Runnable {
     }
 
     public void run() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < juego.numeroMaximoEnemigos(); i++) {
             try {
                 juego.generarEnemigo(tipoEnemigo);
                 TimeUnit.MILLISECONDS.sleep(new Random().nextInt(5) * 1000);
