@@ -1,13 +1,30 @@
 package simulador_juego.solucion;
 
-public class ActividadAliada {
-    private int tipoEnemigo;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-    public ActividadAliada(int tipoEnemigo, IJuego iJuego) {
+public class ActividadAliada implements Runnable {
+    private int tipoEnemigo;
+    private IJuego juego;
+
+    public ActividadAliada(int tipoEnemigo, IJuego juego) {
         this.tipoEnemigo = tipoEnemigo;
+        this.juego = juego;
     }
 
-    public void run(){
-        //code
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            try {
+                juego.eliminarEnemigo(tipoEnemigo);
+                TimeUnit.MILLISECONDS.sleep(new Random().nextInt(5) * 1000);
+            } catch (InterruptedException e) {
+                Logger.getGlobal().log(Level.INFO, "Enemigo NO eliminado");
+                Logger.getGlobal().log(Level.INFO, e.toString());
+                return;
+            }
+        }
     }
 }
