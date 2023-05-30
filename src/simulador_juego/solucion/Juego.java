@@ -7,11 +7,10 @@ public class Juego implements IJuego {
 
     private int numeroTiposEnemigos; // número T de tipos de enemigos
     private int numeroEnemigosPorTipo;// número N de enemigos de cada tipo T
-
     private int contadorEnemigosTotales;
     private Hashtable<Integer, Integer> contadoresEnemigoTipo;
     private Hashtable<Integer, Integer> contadoresEliminadosTipo;
-    private int MAX_ENEMIGOS;   //número máximo M de enemigos al mismo tiempo
+    private int MAX_ENEMIGOS;   //número máximo M de enemigos al mismo tiempo de todos los tipos
     private int MIN_ENEMIGOS = 0;
 
     public Juego(int numeroTiposEnemigos, int numeroEnemigosPorTipo, int numeroMaximoEnemigosTotales) {
@@ -21,6 +20,7 @@ public class Juego implements IJuego {
 
         this.contadoresEliminadosTipo = new Hashtable<>();
         this.contadoresEnemigoTipo = new Hashtable<>();
+        //inicializamos los contadores para todos los tipos a 0
         for (int i = 0; i < numeroTiposEnemigos; i++) {
             contadoresEnemigoTipo.put(i, 0);
             contadoresEliminadosTipo.put(i, 0);
@@ -29,6 +29,25 @@ public class Juego implements IJuego {
 
     @Override
     public synchronized void generarEnemigo(int tipoEnemigo) {
+
+        // Precondicion: Un enemigo de un tipo identificado con un número entero mayor
+        // no podrá generarse hasta que se haya generado al menos un enemigo de un tipo con
+        // un entero inmediatamente inferior. Es decir, no podrá generarse un enemigo de
+        // un tipo 2 hasta que se hayan comenzado a generar los enemigos de tipo 1
+        if (tipoEnemigo > 0) {
+            int tipoEnemigoInferior = tipoEnemigo - 1;
+            int cantidadEnemigosInferior = contadoresEnemigoTipo.get(tipoEnemigoInferior);
+            int cantidadEnemigosInferiorEliminados = contadoresEliminadosTipo.get(tipoEnemigoInferior);
+            while (cantidadEnemigosInferior <= 0 && cantidadEnemigosInferiorEliminados <= 0) {
+                try {
+                    wait();
+                    cantidadEnemigosInferior = contadoresEnemigoTipo.get(tipoEnemigoInferior);
+                    cantidadEnemigosInferiorEliminados = contadoresEliminadosTipo.get(tipoEnemigoInferior);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         int cantidadEnemigos = contadoresEnemigoTipo.get(tipoEnemigo);
 
@@ -51,6 +70,9 @@ public class Juego implements IJuego {
 
         int cantidadEliminados = contadoresEliminadosTipo.get(tipoEnemigo);
         int cantidadEnemigos = contadoresEnemigoTipo.get(tipoEnemigo);
+
+        //comprobasmos que que para este tipo concreto de enemigo no se eliminen
+        // si la cantidada actual es igual o menor a cero "0"
         while (cantidadEnemigos <= MIN_ENEMIGOS) {
             try {
                 wait();
@@ -60,7 +82,7 @@ public class Juego implements IJuego {
         }
         comprobarAntesDeEliminar();
 
-        //obtenemos el valor de enemigos actual y lo incrementamos en 1
+        //obtenemos el valor de enemigos actual y lo decrementamos en 1
         cantidadEliminados++;
         contadoresEliminadosTipo.put(tipoEnemigo, cantidadEliminados);
         cantidadEnemigos--;
@@ -100,7 +122,7 @@ public class Juego implements IJuego {
     protected void checkInvariante() {
         assert sumarContadores() == contadorEnemigosTotales
                 : "INV: La suma de contadores de tipos debe ser igual al valor del contador total";
-        assert contadorEnemigosTotales > MAX_ENEMIGOS : "numero maximo de enemigos sobrepasado";
+        assert contadorEnemigosTotales <= MAX_ENEMIGOS : "numero maximo de enemigos sobrepasado";
     }
 
     protected void comprobarAntesDeGenerar() {

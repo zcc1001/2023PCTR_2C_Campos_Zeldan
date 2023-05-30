@@ -17,6 +17,5 @@ public class SistemaLanzador {
             ActividadAliada aliados = new ActividadAliada(tipoEnemigo, juego);
             new Thread(aliados).start();
         }
-        return;
     }
 }
